@@ -8,6 +8,9 @@
 -keep class com.github.catvod.spider.* { public <methods>; }
 -keep class com.github.catvod.parser.* { public <methods>; }
 
+# AndroidX
+-keep class androidx.core.** { *; }
+
 # Gson
 -keepattributes Signature
 -keepattributes *Annotation*
@@ -21,14 +24,13 @@
 -keep,allowobfuscation,allowshrinking class com.google.gson.reflect.TypeToken
 -keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken
 
+# Nano
+-keep class fi.iki.elonen.** { *; }
+
 # OkHttp
 -dontwarn okhttp3.**
 -keep class okio.** { *; }
 -keep class okhttp3.** { *; }
-
-# Cronet
--keep class org.chromium.net.** { *; }
--keep class com.google.net.cronet.** { *; }
 
 # Sardine
 -keep class com.thegrizzlylabs.sardineandroid.** { *; }

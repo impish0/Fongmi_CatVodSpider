@@ -2,8 +2,6 @@ package com.github.catvod.bean.ali;
 
 import android.text.TextUtils;
 
-import com.github.catvod.api.AliYun;
-import com.github.catvod.utils.FileUtil;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
@@ -29,21 +27,5 @@ public class Drive {
 
     public String getDriveId() {
         return getResourceDriveId().isEmpty() ? getDefaultDriveId() : getResourceDriveId();
-    }
-
-    public Drive clean() {
-        this.defaultDriveId = "";
-        this.resourceDriveId = "";
-        return this;
-    }
-
-    public Drive save() {
-        FileUtil.write(AliYun.get().getDriveCache(), toString());
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return new Gson().toJson(this);
     }
 }

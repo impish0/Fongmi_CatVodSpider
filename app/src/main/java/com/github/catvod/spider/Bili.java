@@ -15,7 +15,7 @@ import com.github.catvod.bean.bili.Page;
 import com.github.catvod.bean.bili.Resp;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.FileUtil;
+import com.github.catvod.utils.Path;
 import com.github.catvod.utils.Utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -66,7 +66,7 @@ public class Bili extends Spider {
     private void setCookie() {
         cookie = extend.get("cookie").getAsString();
         if (cookie.startsWith("http")) cookie = OkHttp.string(cookie).trim();
-        if (TextUtils.isEmpty(cookie)) cookie = FileUtil.read(getUserCache());
+        if (TextUtils.isEmpty(cookie)) cookie = Path.read(getCache());
         if (TextUtils.isEmpty(cookie)) cookie = COOKIE;
     }
 
@@ -77,8 +77,8 @@ public class Bili extends Spider {
         return items;
     }
 
-    private File getUserCache() {
-        return FileUtil.getCacheFile("bilibili_user");
+    private File getCache() {
+        return Path.tv("bilibili");
     }
 
     @Override
@@ -113,15 +113,23 @@ public class Bili extends Spider {
 
     @Override
     public String categoryContent(String tid, String pg, boolean filter, HashMap<String, String> extend) throws Exception {
-        String order = extend.containsKey("order") ? extend.get("order") : "totalrank";
-        String duration = extend.containsKey("duration") ? extend.get("duration") : "0";
-        if (extend.containsKey("tid")) tid = tid + " " + extend.get("tid");
-        String api = "https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=" + URLEncoder.encode(tid) + "&order=" + order + "&duration=" + duration + "&page=" + pg;
-        String json = OkHttp.string(api, getHeader());
-        Resp resp = Resp.objectFrom(json);
-        List<Vod> list = new ArrayList<>();
-        for (Resp.Result item : Resp.Result.arrayFrom(resp.getData().getResult())) list.add(item.getVod());
-        return Result.string(list);
+        if (tid.endsWith("/{pg}")) {
+            String mid = tid.split("/")[0];
+            List<Vod> list = new ArrayList<>();
+            String json = OkHttp.string("https://api.bilibili.com/x/space/wbi/arc/search?mid=" + mid + "&pn=" + pg, getHeader());
+            for (Resp.Result item : Resp.Result.arrayFrom(Resp.objectFrom(json).getData().getList().getAsJsonObject().get("vlist"))) list.add(item.getVod());
+            return Result.string(list);
+        } else {
+            String order = extend.containsKey("order") ? extend.get("order") : "totalrank";
+            String duration = extend.containsKey("duration") ? extend.get("duration") : "0";
+            if (extend.containsKey("tid")) tid = tid + " " + extend.get("tid");
+            String api = "https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=" + URLEncoder.encode(tid) + "&order=" + order + "&duration=" + duration + "&page=" + pg;
+            String json = OkHttp.string(api, getHeader());
+            Resp resp = Resp.objectFrom(json);
+            List<Vod> list = new ArrayList<>();
+            for (Resp.Result item : Resp.Result.arrayFrom(resp.getData().getResult())) list.add(item.getVod());
+            return Result.string(list);
+        }
     }
 
     @Override
@@ -141,6 +149,7 @@ public class Bili extends Spider {
         vod.setVodName(detail.getTitle());
         vod.setTypeName(detail.getType());
         vod.setVodContent(detail.getDesc());
+        vod.setVodDirector(detail.getOwner().getFormat());
         vod.setVodRemarks(detail.getDuration() / 60 + "分鐘");
 
         List<String> acceptDesc = new ArrayList<>();
@@ -197,7 +206,7 @@ public class Bili extends Spider {
         String dan = "https://api.bilibili.com/x/v1/dm/list.so?oid=".concat(cid);
         for (int i = 0; i < acceptDesc.length; i++) {
             url.add(acceptDesc[i]);
-            url.add(Proxy.getUrl() + "?do=bili" + "&aid=" + aid + "&cid=" + cid + "&qn=" + acceptQuality[i]);
+            url.add(Proxy.getUrl() + "?do=bili" + "&aid=" + aid + "&cid=" + cid + "&qn=" + acceptQuality[i] + "&type=mpd");
         }
         return Result.get().url(url).danmaku(dan).dash().header(getHeader()).string();
     }

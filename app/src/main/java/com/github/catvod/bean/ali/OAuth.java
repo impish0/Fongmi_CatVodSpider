@@ -2,8 +2,6 @@ package com.github.catvod.bean.ali;
 
 import android.text.TextUtils;
 
-import com.github.catvod.api.AliYun;
-import com.github.catvod.utils.FileUtil;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
@@ -37,19 +35,8 @@ public class OAuth {
         return getTokenType() + " " + getAccessToken();
     }
 
-    public OAuth clean() {
+    public void clean() {
         this.refreshToken = "";
         this.accessToken = "";
-        return this;
-    }
-
-    public OAuth save() {
-        FileUtil.write(AliYun.get().getOAuthCache(), toString());
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return new Gson().toJson(this);
     }
 }

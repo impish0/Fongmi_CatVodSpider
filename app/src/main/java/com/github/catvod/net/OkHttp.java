@@ -41,6 +41,10 @@ public class OkHttp {
         return client().newBuilder().followRedirects(false).followSslRedirects(false).build();
     }
 
+    public static Response newCall(String url) throws IOException {
+        return client().newCall(new Request.Builder().url(url).build()).execute();
+    }
+
     public static Response newCall(String url, Map<String, String> header) throws IOException {
         return client().newCall(new Request.Builder().url(url).headers(Headers.of(header)).build()).execute();
     }
@@ -58,7 +62,7 @@ public class OkHttp {
     }
 
     public static String string(OkHttpClient client, String url, Map<String, String> params, Map<String, String> header) {
-        return new OkRequest(GET, url, params, header).execute(client).getBody();
+        return url.startsWith("http") ? new OkRequest(GET, url, params, header).execute(client).getBody() : "";
     }
 
     public static String post(String url, Map<String, String> params) {
@@ -97,6 +101,6 @@ public class OkHttp {
     }
 
     public static OkHttpClient.Builder getBuilder() {
-        return new OkHttpClient.Builder().dns(dns()).connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).hostnameVerifier(SSLCompat.VERIFIER).sslSocketFactory(new SSLCompat(), SSLCompat.TM);
+        return new OkHttpClient.Builder().addInterceptor(new OkhttpInterceptor()).dns(dns()).connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).hostnameVerifier((hostname, session) -> true).sslSocketFactory(new SSLCompat(), SSLCompat.TM);
     }
 }
