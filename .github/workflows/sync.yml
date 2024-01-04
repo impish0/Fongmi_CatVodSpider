@@ -2,7 +2,7 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: '* */24 * * *' # every 30 minutes
+    - cron: '*/30 * * * *' # every 30 minutes
   workflow_dispatch: # on button click
 
 jobs:
@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: TG908/fork-sync@v1.6.3
+      - uses: tgymnich/fork-sync@v1.8
         with:
+          #token: ${{ secrets.PERSONAL_TOKEN }}
           owner: FongMi
+          repo: CatVodSpider
           base: main
           head: main
