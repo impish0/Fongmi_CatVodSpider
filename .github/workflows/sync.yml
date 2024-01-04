@@ -14,5 +14,5 @@ jobs:
       - uses: FongMi/CatVodSpider
         with:
           owner: tvfuns
-          base: master
-          head: master
+          base: main
+          head: main
