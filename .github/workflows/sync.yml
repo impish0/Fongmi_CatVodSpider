@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: FongMi/CatVodSpider
         with:
-          owner: impish0
+          owner: tvfuns
           base: master
           head: master
