@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: FongMi/CatVodSpider
+      - uses: TG908/fork-sync@v1.6.3
         with:
-          owner: tvfuns
+          owner: FongMi
           base: main
           head: main
