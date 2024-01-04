@@ -8,7 +8,7 @@ import com.github.catvod.bean.Result;
 import com.github.catvod.bean.Vod;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.Utils;
+import com.github.catvod.utils.Util;
 
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -34,7 +34,7 @@ public class Duanju extends Spider {
 
     private Map<String, String> getHeader() {
         Map<String, String> header = new HashMap<>();
-        header.put("User-Agent", Utils.CHROME);
+        header.put("User-Agent", Util.CHROME);
         return header;
     }
 
@@ -84,17 +84,26 @@ public class Duanju extends Spider {
 
     @Override
     public String detailContent(List<String> ids) throws Exception {
-        String detailUrl = ids.get(0);
-        Document doc = Jsoup.parse(OkHttp.string(detailUrl, getHeader()));
-        List<String> vodItems = new ArrayList<>();
-        Elements sourceList = doc.select(".scroll-content a");
-        for (Element a : sourceList) {
-            String episodeUrl = siteUrl + a.attr("href");
-            String episodeName = a.text();
-            vodItems.add(episodeName + "$" + episodeUrl);
+        Document doc = Jsoup.parse(OkHttp.string(ids.get(0), getHeader()));
+        Elements circuits = doc.select(".module-tab-item.tab-item");
+        Elements sources = doc.select("[class=scroll-content]"); 
+        StringBuilder vod_play_url = new StringBuilder();
+        StringBuilder vod_play_from = new StringBuilder();
+        for (int i = 0; i < sources.size(); i++) {
+            String spanText = circuits.get(i).select("span").text();
+            String smallText = circuits.get(i).select("small").text();
+            String playFromText = spanText + "(共" + smallText + "集)";
+            vod_play_from.append(playFromText).append("$$$");
+            Elements aElementArray = sources.get(i).select("a");
+            for (int j = 0; j < aElementArray.size(); j++) {
+                Element a = aElementArray.get(j);
+                String href = siteUrl + a.attr("href");
+                String text = a.text();
+                vod_play_url.append(text).append("$").append(href);
+                boolean notLastEpisode = j < aElementArray.size() - 1;
+                vod_play_url.append(notLastEpisode ? "#" : "$$$");
+            }
         }
-        String vod_play_from = "Qile";
-        String vod_play_url = TextUtils.join("#", vodItems);
         String title = doc.select("h1.page-title").text();
         String classifyName = doc.select("div.tag-link a").text();
         String year = doc.select("a.tag-link").eq(1).text();

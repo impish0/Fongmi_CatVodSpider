@@ -9,7 +9,7 @@ import com.github.catvod.bean.Sub;
 import com.github.catvod.bean.Vod;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.Utils;
+import com.github.catvod.utils.Util;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,9 +37,10 @@ public class Push extends Spider {
 
     @Override
     public String playerContent(String flag, String id, List<String> vipFlags) {
+        if (id.startsWith("http") && id.contains("***")) id = id.replace("***", "#");
         if (flag.equals("直連")) return Result.get().url(id).subs(getSubs(id)).string();
-        if (flag.equals("嗅探")) return Result.get().parse().url(id).string();
         if (flag.equals("解析")) return Result.get().parse().jx().url(id).string();
+        if (flag.equals("嗅探")) return Result.get().parse().url(id).string();
         return ali.playerContent(flag, id, vipFlags);
     }
 
@@ -48,6 +49,7 @@ public class Push extends Spider {
         vod.setVodId(url);
         vod.setTypeName("FongMi");
         vod.setVodName(url.startsWith("file://") ? new File(url).getName() : url);
+        if (url.startsWith("http") && url.contains("#")) url = url.replace("#", "***");
         vod.setVodPic("https://pic.rmb.bdstatic.com/bjh/1d0b02d0f57f0a42201f92caba5107ed.jpeg");
         vod.setVodPlayFrom(TextUtils.join("$$$", Arrays.asList("直連", "嗅探", "解析")));
         vod.setVodPlayUrl(TextUtils.join("$$$", Arrays.asList("播放$" + url, "播放$" + url, "播放$" + url)));
@@ -64,12 +66,12 @@ public class Push extends Spider {
     private void setHttpSub(String url, List<Sub> subs) {
         List<String> vodTypes = Arrays.asList("mp4", "mkv");
         List<String> subTypes = Arrays.asList("srt", "ass");
-        if (!vodTypes.contains(Utils.getExt(url))) return;
+        if (!vodTypes.contains(Util.getExt(url))) return;
         for (String ext : subTypes) detectSub(url, ext, subs);
     }
 
     private void detectSub(String url, String ext, List<Sub> subs) {
-        url = Utils.removeExt(url).concat(".").concat(ext);
+        url = Util.removeExt(url).concat(".").concat(ext);
         if (OkHttp.string(url).length() < 100) return;
         String name = Uri.parse(url).getLastPathSegment();
         subs.add(Sub.create().name(name).ext(ext).url(url));
@@ -79,8 +81,8 @@ public class Push extends Spider {
         File file = new File(url.replace("file://", ""));
         if (file.getParentFile() == null) return;
         for (File f : file.getParentFile().listFiles()) {
-            String ext = Utils.getExt(f.getName());
-            if (Utils.isSub(ext)) subs.add(Sub.create().name(Utils.removeExt(f.getName())).ext(ext).url("file://" + f.getAbsolutePath()));
+            String ext = Util.getExt(f.getName());
+            if (Util.isSub(ext)) subs.add(Sub.create().name(Util.removeExt(f.getName())).ext(ext).url("file://" + f.getAbsolutePath()));
         }
     }
 }

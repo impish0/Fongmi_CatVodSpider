@@ -8,7 +8,7 @@ import com.github.catvod.bean.Result;
 import com.github.catvod.bean.Vod;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.Utils;
+import com.github.catvod.utils.Util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,7 +31,7 @@ public class Kanqiu extends Spider {
 
     private Map<String, String> getHeader() {
         Map<String, String> header = new HashMap<>();
-        header.put("User-Agent", Utils.CHROME);
+        header.put("User-Agent", Util.CHROME);
         return header;
     }
 
@@ -84,13 +84,14 @@ public class Kanqiu extends Spider {
 
     @Override
     public String detailContent(List<String> ids) throws Exception {
-        Document doc = Jsoup.parse(OkHttp.string(ids.get(0) + "-url", getHeader()));
-        JSONArray jsonArray = new JSONArray(doc.text());
+        if (ids.get(0).equals(siteUrl)) return Result.error("比賽尚未開始");
+        String content = OkHttp.string(ids.get(0) + "-url", getHeader());
+        JSONArray linksArray = new JSONObject(content).getJSONArray("links");
         List<String> vodItems = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject dataObject = jsonArray.getJSONObject(i);
-            String text = dataObject.optString("name");
-            String href = dataObject.optString("url");
+        for (int i = 0; i < linksArray.length(); i++) {
+            JSONObject linkObject = linksArray.getJSONObject(i);
+            String text = linkObject.optString("name");
+            String href = linkObject.optString("url");
             vodItems.add(text + "$" + href);
         }
         String vod_play_from = "Qile";

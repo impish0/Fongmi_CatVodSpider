@@ -1,5 +1,6 @@
 package com.github.catvod.bean;
 
+import com.github.catvod.utils.Util;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,8 @@ public class Result {
     private String format;
     @SerializedName("danmaku")
     private String danmaku;
+    @SerializedName("msg")
+    private String msg;
     @SerializedName("url")
     private Object url;
     @SerializedName("subs")
@@ -85,6 +89,10 @@ public class Result {
         return Result.get().vod(item).string();
     }
 
+    public static String error(String msg) {
+        return Result.get().vod(Collections.emptyList()).msg(msg).string();
+    }
+
     public static Result get() {
         return new Result();
     }
@@ -129,6 +137,13 @@ public class Result {
         return this;
     }
 
+    public Result chrome() {
+        Map<String, String> header = new HashMap<>();
+        header.put("User-Agent", Util.CHROME);
+        header(header);
+        return this;
+    }
+
     public Result parse() {
         this.parse = 1;
         return this;
@@ -156,6 +171,11 @@ public class Result {
 
     public Result danmaku(String danmaku) {
         this.danmaku = danmaku;
+        return this;
+    }
+
+    public Result msg(String msg) {
+        this.msg = msg;
         return this;
     }
 
